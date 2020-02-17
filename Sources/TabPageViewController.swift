@@ -17,7 +17,7 @@ open class TabPageViewController: UIPageViewController {
         guard let viewController = viewControllers?.first else {
             return nil
         }
-        return tabItems.map{ $0.viewController }.index(of: viewController)
+        return tabItems.map{ $0.viewController }.firstIndex(of: viewController)
     }
     fileprivate var beforeIndex: Int = 0
     fileprivate var tabItemsCount: Int {
@@ -80,7 +80,7 @@ open class TabPageViewController: UIPageViewController {
 
 public extension TabPageViewController {
 
-    public func displayControllerWithIndex(_ index: Int, direction: UIPageViewControllerNavigationDirection, animated: Bool) {
+    func displayControllerWithIndex(_ index: Int, direction: UIPageViewController.NavigationDirection, animated: Bool) {
 
         beforeIndex = index
         shouldScrollCurrentBar = false
@@ -120,7 +120,7 @@ extension TabPageViewController {
 
     fileprivate func setupScrollView() {
         // Disable PageViewController's ScrollView bounce
-        let scrollView = view.subviews.flatMap { $0 as? UIScrollView }.first
+        let scrollView = view.subviews.compactMap { $0 as? UIScrollView }.first
         scrollView?.scrollsToTop = false
         scrollView?.delegate = self
         scrollView?.backgroundColor = option.pageBackgoundColor
@@ -139,6 +139,7 @@ extension TabPageViewController {
     }
 
     fileprivate func configuredTabView() -> TabView {
+        guard let view = view else { fatalError() }
         let tabView = TabView(isInfinity: isInfinity, option: option)
         tabView.translatesAutoresizingMaskIntoConstraints = false
 
@@ -181,7 +182,7 @@ extension TabPageViewController {
         tabView.pageTabItems = tabItems.map({ $0.title})
         tabView.updateCurrentIndex(beforeIndex, shouldScroll: true)
 
-        tabView.pageItemPressedBlock = { [weak self] (index: Int, direction: UIPageViewControllerNavigationDirection) in
+        tabView.pageItemPressedBlock = { [weak self] (index: Int, direction: UIPageViewController.NavigationDirection) in
             self?.displayControllerWithIndex(index, direction: direction, animated: true)
         }
 
@@ -191,6 +192,7 @@ extension TabPageViewController {
     }
 
     private func setupStatusView() {
+        guard let view = view else { fatalError() }
         let statusView = UIView()
         statusView.backgroundColor = option.tabBackgroundColor
         statusView.translatesAutoresizingMaskIntoConstraints = false
@@ -270,7 +272,7 @@ extension TabPageViewController {
 
         if option.hidesTopViewOnSwipeType != .none {
             tabBarTopConstraint.constant = 0.0
-            UIView.animate(withDuration: TimeInterval(UINavigationControllerHideShowBarDuration)) {
+            UIView.animate(withDuration: TimeInterval(UINavigationController.hideShowBarDuration)) {
                 self.view.layoutIfNeeded()
             }
         }
@@ -283,7 +285,7 @@ extension TabPageViewController {
         guard let tabBarTopConstraint = tabBarTopConstraint else { return }
 
         tabBarTopConstraint.constant = hidden ? -(20.0 + option.tabHeight) : 0.0
-        UIView.animate(withDuration: TimeInterval(UINavigationControllerHideShowBarDuration)) {
+        UIView.animate(withDuration: TimeInterval(UINavigationController.hideShowBarDuration)) {
             self.view.layoutIfNeeded()
         }
     }
@@ -296,7 +298,7 @@ extension TabPageViewController: UIPageViewControllerDataSource {
 
     fileprivate func nextViewController(_ viewController: UIViewController, isAfter: Bool) -> UIViewController? {
 
-        guard var index = tabItems.map({$0.viewController}).index(of: viewController) else {
+        guard var index = tabItems.map({$0.viewController}).firstIndex(of: viewController) else {
             return nil
         }
 
